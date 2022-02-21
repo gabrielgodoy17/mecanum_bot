@@ -65,15 +65,15 @@ class SpiInterface(Node):
 
 		#Message slave 1
 
-		self.to_send_slave1 = wheel_speed_to_string(msg.w1, 1) + wheel_speed_to_string(msg.w2, 2)
+		self.to_send_slave1 = generate_command(msg.w1, 1) + generate_command(msg.w2, 2)
 		self.get_logger().debug('To send slave1: %s' % self.to_send_slave1)
 
 		#Message slave 2
 
-		self.to_send_slave2 = wheel_speed_to_string(msg.w3, 1) + wheel_speed_to_string(msg.w4, 2)
+		self.to_send_slave2 = generate_command(msg.w3, 1) + generate_command(msg.w4, 2)
 		self.get_logger().debug('To send slave2: %s' % self.to_send_slave2)
 
-def wheel_speed_to_string(wheel_speed, wheel_num):
+def generate_command(wheel_speed, wheel_num):
 	wheel_speed_int = int(round(wheel_speed))
 	wheel_speed_string = str(abs(wheel_speed_int))
 	sign = "0"
@@ -90,8 +90,6 @@ def wheel_speed_to_string(wheel_speed, wheel_num):
 		wheel_speed_string = "00"
 
 	return ":w" + str(wheel_num) + sign + wheel_speed_string + ";"
-
-def string_to_wheel_speed()
 
 dict = {
 	"M1+":":w1+25;",
