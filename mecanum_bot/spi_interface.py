@@ -1,3 +1,4 @@
+from audioop import tostereo
 import spidev
 import rclpy
 import time
@@ -5,6 +6,8 @@ import re
 from rclpy.node import Node
 from std_msgs.msg import String
 from gpiozero import LED
+
+from mecanum_bot_interfaces.msg import WheelSpeed
 
 #Initial config
 
@@ -22,9 +25,9 @@ class SpiInterface(Node):
 
 	def __init__(self):
 		super().__init__('spi_interface')
-		self.subscription = self.create_subscription(String, 'motors', self.listener_callback, 10)
+		self.subscription = self.create_subscription(WheelSpeed, 'motors', self.listener_callback, 10)
 		self.subscription #prevent unused variable warning
-		self.publisher_ = self.create_publisher(String, 'wheels_speed', 10)
+		self.publisher_ = self.create_publisher(WheelSpeed, 'wheels_speed', 10)
 		timer_period = 0.05  # seconds   
 		self.timer = self.create_timer(timer_period, self.timer_callback)
 		self.i = 0
@@ -32,45 +35,63 @@ class SpiInterface(Node):
 		self.to_send_slave2 = ":w3000;:w4000;" #intialize with wheels stopped
 
 	def timer_callback(self):
+		msg = WheelSpeed()
+		regex_w1 = re.compile('(?<=w1).{3}')
+		regex_w2 = re.compile('(?<=w2).{3}')
 		#Slave 1 spi
 		slave_select_1.off()
 		response = spi.xfer2(bytearray(self.to_send_slave1.encode()))
 		slave_1 = ''.join([str(chr(elem)) for elem in response])
-		slave_1 = slave_1.replace(":","")
-		slave_1 = slave_1.replace(";","")
 		self.get_logger().debug(slave_1)
+		msg.w1 = float(regex_w1.search(slave_1))
+		msg.w2 = float(regex_w2.search(slave_1))
 		slave_select_1.on()
 
 		#Slave 2 spi
 		slave_select_2.off()
 		response2 = spi.xfer2(bytearray(self.to_send_slave2.encode()))
 		slave_2 = ''.join([str(chr(elem)) for elem in response2])
-		slave_2 = slave_2[1:2] + "3" + slave_2[3:6] + slave_2[8:9] + "4" + slave_2[10:13]
 		self.get_logger().debug(slave_2)
+		msg.w3 = float(regex_w1.search(slave_2))
+		msg.w4 = float(regex_w2.search(slave_2))
 		slave_select_2.on()
 
-		to_send_pub = slave_1 + slave_2
-
-		msg = String()
-		msg.data= to_send_pub
 		self.publisher_.publish(msg)
-		self.get_logger().debug('Publishing: "%s"' % msg.data)
+		self.get_logger().debug('Publishing: "%s"' % msg)
 
 	def listener_callback(self, msg):
 
-		to_send_spi=msg.data
-		self.get_logger().debug('Received from topic: %s' % to_send_spi)
+		self.get_logger().debug('Received from topic: %s' % msg)
 
 		#Message slave 1
 
-		self.to_send_slave1 = dict.get(to_send_spi[0:3]) + dict.get(to_send_spi[4:7])
+		self.to_send_slave1 = wheel_speed_to_string(msg.w1, 1) + wheel_speed_to_string(msg.w2, 2)
 		self.get_logger().debug('To send slave1: %s' % self.to_send_slave1)
 
 		#Message slave 2
 
-		self.to_send_slave2 = dict.get(to_send_spi[8:11]) + dict.get(to_send_spi[12:15])
+		self.to_send_slave2 = wheel_speed_to_string(msg.w3, 1) + wheel_speed_to_string(msg.w4, 2)
 		self.get_logger().debug('To send slave2: %s' % self.to_send_slave2)
 
+def wheel_speed_to_string(wheel_speed, wheel_num):
+	wheel_speed_int = int(round(wheel_speed))
+	wheel_speed_string = str(abs(wheel_speed_int))
+	sign = "0"
+
+	if wheel_speed_int < 0:
+		sign = "-"
+	elif wheel_speed_int > 0:
+		sign = "+"
+	
+	if len(wheel_speed_string) == 1:
+		wheel_speed_string = "0" + wheel_speed_string
+	elif len(wheel_speed_string) > 2: #Should never happen, just in case
+		sign = "0"
+		wheel_speed_string = "00"
+
+	return ":w" + str(wheel_num) + sign + wheel_speed_string + ";"
+
+def string_to_wheel_speed()
 
 dict = {
 	"M1+":":w1+25;",
