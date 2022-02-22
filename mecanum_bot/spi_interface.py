@@ -7,7 +7,7 @@ from rclpy.node import Node
 from std_msgs.msg import String
 from gpiozero import LED
 
-from mecanum_bot_interfaces.msg import WheelSpeed
+from mecanum_interfaces.msg import WheelSpeed
 
 #Initial config
 
