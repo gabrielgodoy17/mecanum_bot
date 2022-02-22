@@ -1,4 +1,3 @@
-from audioop import tostereo
 import spidev
 import rclpy
 import time
@@ -36,25 +35,27 @@ class SpiInterface(Node):
 
 	def timer_callback(self):
 		msg = WheelSpeed()
-		regex_w1 = re.compile('(?<=w1).{3}')
-		regex_w2 = re.compile('(?<=w2).{3}')
+		regex_w1 = re.compile(r'(?<=w1\+)(\d{2})|(?<=w1)(\d{3})|(?<=w1-)(\d{2})')
+		regex_w2 = re.compile(r'(?<=w2\+)(\d{2})|(?<=w2)(\d{3})|(?<=w2-)(\d{2})')
 		#Slave 1 spi
 		slave_select_1.off()
 		response = spi.xfer2(bytearray(self.to_send_slave1.encode()))
+		slave_select_1.on()
 		slave_1 = ''.join([str(chr(elem)) for elem in response])
 		self.get_logger().debug(slave_1)
-		msg.w1 = float(regex_w1.search(slave_1))
-		msg.w2 = float(regex_w2.search(slave_1))
-		slave_select_1.on()
+		msg.w1 = float(regex_w1.search(slave_1).group())
+		msg.w2 = float(regex_w2.search(slave_1).group())
+
 
 		#Slave 2 spi
 		slave_select_2.off()
 		response2 = spi.xfer2(bytearray(self.to_send_slave2.encode()))
+		slave_select_2.on()
 		slave_2 = ''.join([str(chr(elem)) for elem in response2])
 		self.get_logger().debug(slave_2)
-		msg.w3 = float(regex_w1.search(slave_2))
-		msg.w4 = float(regex_w2.search(slave_2))
-		slave_select_2.on()
+		msg.w3 = float(regex_w1.search(slave_2).group())
+		msg.w4 = float(regex_w2.search(slave_2).group())
+
 
 		self.publisher_.publish(msg)
 		self.get_logger().debug('Publishing: "%s"' % msg)
