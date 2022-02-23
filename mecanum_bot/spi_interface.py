@@ -1,3 +1,4 @@
+from socket import MsgFlag
 import spidev
 import rclpy
 import time
@@ -35,8 +36,9 @@ class SpiInterface(Node):
 
 	def timer_callback(self):
 		msg = WheelSpeed()
-		regex_w1 = re.compile(r'(?<=w1\+)(\d{2})|(?<=w1)(\d{3})|(?<=w1-)(\d{2})')
-		regex_w2 = re.compile(r'(?<=w2\+)(\d{2})|(?<=w2)(\d{3})|(?<=w2-)(\d{2})')
+		#regex_w1 = re.compile(r'(?<=w1\+)(\d{2})|(?<=w1)(\d{3})|(?<=w1-)(\d{2})')
+		#regex_w2 = re.compile(r'(?<=w2\+)(\d{2})|(?<=w2)(\d{3})|(?<=w2-)(\d{2})')
+		#to_send_slave1 = dict.get(to_send_spi[0:3]) + dict.get(to_send_spi[4:7])
 		#Slave 1 spi
 		slave_select_1.off()
 		response = spi.xfer2(bytearray(self.to_send_slave1.encode()))
@@ -48,15 +50,28 @@ class SpiInterface(Node):
 
 		#Process slave 1 response
 		slave_1 = ''.join([str(chr(elem)) for elem in response])
-		self.get_logger().info(slave_1)
-		msg.w1 = float(regex_w1.search(slave_1).group())
-		msg.w2 = float(regex_w2.search(slave_1).group())
-
+		self.get_logger().info("recieve from slave1: "+slave_1)
+		msg.w1 = float(slave_1[3:6])
+		self.get_logger().info("w1: (only nums)"+slave_1[3:6])
+		self.get_logger().info("w1: (float()) "+float(slave_1[3:6]))
+		self.get_logger().info("w1: "+msg.w1)
+		msg.w2 = float(slave_1[10:13])
+		self.get_logger().info("w2: (only nums)"+slave_1[10:13])
+		self.get_logger().info("w2: (float()) "+float(slave_1[10:13]))
+		self.get_logger().info("w2: "+msg.w2)
+		
 		#Process slave 2 response
 		slave_2 = ''.join([str(chr(elem)) for elem in response2])
-		self.get_logger().info(slave_2)
-		msg.w3 = float(regex_w1.search(slave_2).group())
-		msg.w4 = float(regex_w2.search(slave_2).group())
+		self.get_logger().info("recieve from slave2: "+slave_2)
+		msg.w3 = float(slave_2[3:6])
+		self.get_logger().info("w3: (only nums)"+slave_2[3:6])
+		self.get_logger().info("w3: (float()) "+float(slave_2[3:6]))
+		self.get_logger().info("w3: "+msg.w3)
+
+		msg.w4 = float(slave_2[10:13])
+		self.get_logger().info("w4: (only nums)"+slave_2[10:13])
+		self.get_logger().info("w4: (float()) "+float(slave_2[10:13]))
+		self.get_logger().info("w4: "+msg.w4)
 
 		self.publisher_.publish(msg)
 		self.get_logger().info('Publishing: "%s"' % msg)
