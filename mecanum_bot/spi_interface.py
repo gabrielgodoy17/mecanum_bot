@@ -41,16 +41,18 @@ class SpiInterface(Node):
 		slave_select_1.off()
 		response = spi.xfer2(bytearray(self.to_send_slave1.encode()))
 		slave_select_1.on()
+		#Slave 2 spi
+		slave_select_2.off()
+		response2 = spi.xfer2(bytearray(self.to_send_slave2.encode()))
+		slave_select_2.on()
+
+		#Process slave 1 response
 		slave_1 = ''.join([str(chr(elem)) for elem in response])
 		self.get_logger().debug(slave_1)
 		msg.w1 = float(regex_w1.search(slave_1).group())
 		msg.w2 = float(regex_w2.search(slave_1).group())
 
-
-		#Slave 2 spi
-		slave_select_2.off()
-		response2 = spi.xfer2(bytearray(self.to_send_slave2.encode()))
-		slave_select_2.on()
+		#Process slave 2 response
 		slave_2 = ''.join([str(chr(elem)) for elem in response2])
 		self.get_logger().debug(slave_2)
 		msg.w3 = float(regex_w1.search(slave_2).group())
@@ -67,12 +69,12 @@ class SpiInterface(Node):
 		#Message slave 1
 
 		self.to_send_slave1 = generate_command(msg.w1, 1) + generate_command(msg.w2, 2)
-		self.get_logger().debug('To send slave1: %s' % self.to_send_slave1)
+		self.get_logger().debug('To send slave1: ' + self.to_send_slave1)
 
 		#Message slave 2
 
 		self.to_send_slave2 = generate_command(msg.w3, 1) + generate_command(msg.w4, 2)
-		self.get_logger().debug('To send slave2: %s' % self.to_send_slave2)
+		self.get_logger().debug('To send slave2: ' + self.to_send_slave2)
 
 def generate_command(wheel_speed, wheel_num):
 	wheel_speed_int = int(round(wheel_speed))
