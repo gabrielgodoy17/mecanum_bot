@@ -53,11 +53,11 @@ class SpiInterface(Node):
 		self.get_logger().info("recieve from slave1: "+slave_1)
 		msg.w1 = float(slave_1[3:6])
 		self.get_logger().info("w1: (only nums)"+slave_1[3:6])
-		self.get_logger().info("w1: (float()) "+float(slave_1[3:6]))
+		self.get_logger().info("w1: (float()) %f" %float(slave_1[3:6]))
 		self.get_logger().info("w1: "+msg.w1)
 		msg.w2 = float(slave_1[10:13])
 		self.get_logger().info("w2: (only nums)"+slave_1[10:13])
-		self.get_logger().info("w2: (float()) "+float(slave_1[10:13]))
+		self.get_logger().info("w2: (float()) %f" %float(slave_1[10:13]))
 		self.get_logger().info("w2: "+msg.w2)
 		
 		#Process slave 2 response
@@ -65,12 +65,12 @@ class SpiInterface(Node):
 		self.get_logger().info("recieve from slave2: "+slave_2)
 		msg.w3 = float(slave_2[3:6])
 		self.get_logger().info("w3: (only nums)"+slave_2[3:6])
-		self.get_logger().info("w3: (float()) "+float(slave_2[3:6]))
+		self.get_logger().info("w3: (float()) %f" %float(slave_2[3:6]))
 		self.get_logger().info("w3: "+msg.w3)
 
 		msg.w4 = float(slave_2[10:13])
 		self.get_logger().info("w4: (only nums)"+slave_2[10:13])
-		self.get_logger().info("w4: (float()) "+float(slave_2[10:13]))
+		self.get_logger().info("w4: (float()) %f" %float(slave_2[10:13]))
 		self.get_logger().info("w4: "+msg.w4)
 
 		self.publisher_.publish(msg)
