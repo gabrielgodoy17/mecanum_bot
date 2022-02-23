@@ -48,33 +48,32 @@ class SpiInterface(Node):
 
 		#Process slave 1 response
 		slave_1 = ''.join([str(chr(elem)) for elem in response])
-		self.get_logger().debug(slave_1)
+		self.get_logger().info(slave_1)
 		msg.w1 = float(regex_w1.search(slave_1).group())
 		msg.w2 = float(regex_w2.search(slave_1).group())
 
 		#Process slave 2 response
 		slave_2 = ''.join([str(chr(elem)) for elem in response2])
-		self.get_logger().debug(slave_2)
+		self.get_logger().info(slave_2)
 		msg.w3 = float(regex_w1.search(slave_2).group())
 		msg.w4 = float(regex_w2.search(slave_2).group())
 
-
 		self.publisher_.publish(msg)
-		self.get_logger().debug('Publishing: "%s"' % msg)
+		self.get_logger().info('Publishing: "%s"' % msg)
 
 	def listener_callback(self, msg):
 
-		self.get_logger().info('Received from topic: %s' % msg)
+		self.get_logger().debug('Received from topic: %s' % msg)
 
 		#Message slave 1
 
 		self.to_send_slave1 = generate_command(msg.w1, 1) + generate_command(msg.w2, 2)
-		self.get_logger().info('To send slave1: ' + self.to_send_slave1)
+		self.get_logger().debug('To send slave1: ' + self.to_send_slave1)
 
 		#Message slave 2
 
 		self.to_send_slave2 = generate_command(msg.w3, 1) + generate_command(msg.w4, 2)
-		self.get_logger().info('To send slave2: ' + self.to_send_slave2)
+		self.get_logger().debug('To send slave2: ' + self.to_send_slave2)
 
 def generate_command(wheel_speed, wheel_num):
 	wheel_speed_int = int(round(wheel_speed))
@@ -93,25 +92,6 @@ def generate_command(wheel_speed, wheel_num):
 		wheel_speed_string = "00"
 
 	return ":w" + str(wheel_num) + sign + wheel_speed_string + ";"
-
-dict = {
-	"M1+":":w1+25;",
-	"M10":":w1000;",
-	"M1-":":w1-25;",
-
-	"M2+":":w2+25;",
-	"M20":":w2000;",
-	"M2-":":w2-25;",
-
-	"M3+":":w1+25;",
-	"M30":":w1000;",
-	"M3-":":w1-25;",
-
-	"M4+":":w2+25;",
-	"M40":":w2000;",
-	"M4-":":w2-25;"
-}
-
 
 def main(args=None):
 
