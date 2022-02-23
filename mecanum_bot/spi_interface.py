@@ -76,17 +76,17 @@ class SpiInterface(Node):
 
 	def listener_callback(self, msg):
 
-		self.get_logger().debug('Received from topic: %s' % msg)
+		self.get_logger().info('Received from topic: %s' % msg)
 
 		#Message slave 1
 
 		self.to_send_slave1 = generate_command(msg.w1, 1) + generate_command(msg.w2, 2)
-		self.get_logger().debug('To send slave1: ' + self.to_send_slave1)
+		self.get_logger().info('To send slave1: ' + self.to_send_slave1)
 
 		#Message slave 2
 
 		self.to_send_slave2 = generate_command(msg.w3, 1) + generate_command(msg.w4, 2)
-		self.get_logger().debug('To send slave2: ' + self.to_send_slave2)
+		self.get_logger().info('To send slave2: ' + self.to_send_slave2)
 
 def generate_command(wheel_speed, wheel_num):
 	wheel_speed_int = int(round(wheel_speed))
