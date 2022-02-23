@@ -42,12 +42,6 @@ class SpiInterface(Node):
 		#Slave 1 spi
 		slave_select_1.off()
 		response = spi.xfer2(bytearray(self.to_send_slave1.encode()))
-		slave_select_1.on()
-		#Slave 2 spi
-		slave_select_2.off()
-		response2 = spi.xfer2(bytearray(self.to_send_slave2.encode()))
-		slave_select_2.on()
-
 		#Process slave 1 response
 		slave_1 = ''.join([str(chr(elem)) for elem in response])
 		self.get_logger().info("recieve from slave1: "+slave_1)
@@ -59,7 +53,10 @@ class SpiInterface(Node):
 		self.get_logger().info("w2: (only nums)"+slave_1[10:13])
 		self.get_logger().info("w2: (float()) %f" %float(slave_1[10:13]))
 		self.get_logger().info("w2: %f"%msg.w2)
-		
+		slave_select_1.on()
+		#Slave 2 spi
+		slave_select_2.off()
+		response2 = spi.xfer2(bytearray(self.to_send_slave2.encode()))		
 		#Process slave 2 response
 		slave_2 = ''.join([str(chr(elem)) for elem in response2])
 		self.get_logger().info("recieve from slave2: "+slave_2)
@@ -72,7 +69,8 @@ class SpiInterface(Node):
 		self.get_logger().info("w4: (only nums)"+slave_2[10:13])
 		self.get_logger().info("w4: (float()) %f" %float(slave_2[10:13]))
 		self.get_logger().info("w4: %f"%msg.w4)
-
+		slave_select_2.on()
+		
 		self.publisher_.publish(msg)
 		self.get_logger().info('Publishing: "%s"' % msg)
 
