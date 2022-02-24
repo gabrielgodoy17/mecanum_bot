@@ -43,7 +43,6 @@ class SpiInterface(Node):
 		#to_send_slave1 = dict.get(to_send_spi[0:3]) + dict.get(to_send_spi[4:7])
 		#Slave 1 spi
 		self.get_logger().info("to_send_slave1: "+self.to_send_slave1)
-		self.get_logger().info(bytearray(self.to_send_slave1.encode(encoding='UTF-8')))
 		slave_select_1.off()
 		response = spi.xfer2(bytearray(self.to_send_slave1.encode(encoding='UTF-8')))
 		#Process slave 1 response
@@ -59,9 +58,8 @@ class SpiInterface(Node):
 
 		#Slave 2 spi
 		self.get_logger().info("to_send_slave2: "+self.to_send_slave2)
-		self.get_logger().info(bytearray(self.to_send_slave2.encode(encoding='UTF-8')))
 		slave_select_2.off()
-		response2 = spi.xfer2(bytearray(self.to_send_slave2.encode()))		
+		response2 = spi.xfer2(bytearray(self.to_send_slave2.encode(encoding='UTF-8')))		
 		#Process slave 2 response
 		slave_2 = ''.join([str(chr(elem)) for elem in response2])
 		self.get_logger().info("recieve from slave2: "+slave_2)
