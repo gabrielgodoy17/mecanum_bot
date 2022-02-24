@@ -28,7 +28,7 @@ class SpiInterface(Node):
 		self.subscription = self.create_subscription(WheelSpeed, 'motors', self.listener_callback, 10)
 		self.subscription #prevent unused variable warning
 		self.publisher_ = self.create_publisher(WheelSpeed, 'wheels_speed', 10)
-		timer_period = 0.1  # seconds   
+		timer_period = 1  # seconds   
 		self.timer = self.create_timer(timer_period, self.timer_callback)
 		self.i = 0
 		self.to_send_slave1 = ":w1000;:w2000;" #intialize with wheels stopped
@@ -40,6 +40,7 @@ class SpiInterface(Node):
 		#regex_w2 = re.compile(r'(?<=w2\+)(\d{2})|(?<=w2)(\d{3})|(?<=w2-)(\d{2})')
 		#to_send_slave1 = dict.get(to_send_spi[0:3]) + dict.get(to_send_spi[4:7])
 		#Slave 1 spi
+		self.get_logger().info("to_send_slave1: "+self.to_send_slave1);
 		slave_select_1.off()
 		response = spi.xfer2(bytearray(self.to_send_slave1.encode()))
 		#Process slave 1 response
@@ -55,6 +56,7 @@ class SpiInterface(Node):
 		self.get_logger().info("w2: %f"%msg.w2)
 		slave_select_1.on()
 		#Slave 2 spi
+		self.get_logger().info("to_send_slave2: "+self.to_send_slave2);
 		slave_select_2.off()
 		response2 = spi.xfer2(bytearray(self.to_send_slave2.encode()))		
 		#Process slave 2 response
