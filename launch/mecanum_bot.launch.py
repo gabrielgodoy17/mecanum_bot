@@ -52,6 +52,12 @@ def generate_launch_description():
         name='fwd_kinematics'
     )
 
+    inv_kinematics_node = Node(
+        package='mecanum_bot',
+        executable='inv_kinematics',
+        name='inv_kinematics'
+    )
+
     wheels_joint_update_node = Node(
         package='mecanum_bot',
         executable='wheels_joint_update',
@@ -113,6 +119,7 @@ def generate_launch_description():
         robot_localization_node,
         direction_mapper_node,
         fwd_kinematics_node,
+        inv_kinematics_node,
         wheels_joint_update_node,
         spi_interface_node,
         ydlidar_node,
