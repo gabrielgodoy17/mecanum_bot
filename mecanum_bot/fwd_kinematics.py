@@ -41,14 +41,13 @@ class FwdKinematics(Node):
 		w3 = msg.w3
 		w4 = msg.w4
 
-		#Transaform to rad/s
+		#Transform to rad/s
 		w1 = rpmToRads(w1)
 		w2 = rpmToRads(w2)
 		w3 = rpmToRads(w3)
 		w4 = rpmToRads(w4)
 
 		#Robot velocities
-		
 		vx = (wheel_radius/4) * (w1 + w2 + w3 + w4)
 		vy = (wheel_radius/4) * (-w1 + w2 + w3 - w4)
 		w = (wheel_radius/(4 * (length_x + length_y))) * (-w1 + w2 - w3 + w4)
