@@ -26,9 +26,9 @@ class InvKinematics(Node):
 	def listener_callback(self, msg):
 		
 		#Separate wheel speeds
-		vx = msg.linear[0]
-		vy = msg.linear[1]
-		w = msg.angular[2]
+		vx = msg.linear.x
+		vy = msg.linear.y
+		w = msg.angular.z
 
 		#Wheel velocities
 		
