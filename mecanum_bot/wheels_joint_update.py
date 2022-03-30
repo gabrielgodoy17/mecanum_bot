@@ -29,42 +29,28 @@ class WheelsJointUpdate(Node):
 
 		#Delta time
 		dt = ((new_time.__sub__(old_time)).nanoseconds)/1000000000
-	
-		#Read topic
-		wheel_speed=str(msg.data)
 
-		#verify data pattern with regex
-		regex= "[^+\-0-9w]"
-		result = re.search(regex,wheel_speed)
-		if result is None : 
+		#Transaform to rad/s
+		w1 = rpmToRads(msg.w1)
+		w2 = rpmToRads(msg.w2)
+		w3 = rpmToRads(msg.w3)
+		w4 = rpmToRads(msg.w4)
+
+		self.theta1 = self.theta1 + w1 * dt
+		self.theta2 = self.theta2 + w2 * dt
+		self.theta3 = self.theta3 + w3 * dt
+		self.theta4 = self.theta4 + w4 * dt
 		
-			#Separate wheel speeds
-			w1 = int(wheel_speed[2:5])
-			w2 = int(wheel_speed[7:10])
-			w3 = int(wheel_speed[12:15])
-			w4 = int(wheel_speed[17:])
+		jointStates = JointState()
+		jointStates.header.frame_id = "odom"
+		jointStates.header.stamp =  self.get_clock().now().to_msg()
 
-			#Transaform to rad/s
-			w1 = rpmToRads(w1)
-			w2 = rpmToRads(w2)
-			w3 = rpmToRads(w3)
-			w4 = rpmToRads(w4)
+		jointStates.name = ['drivewhl_1_joint', 'drivewhl_2_joint', 'drivewhl_3_joint', 'drivewhl_4_joint']
+		jointStates.position = [self.theta1, self.theta2, self.theta3, self.theta4]
+		jointStates.velocity = [w1, w2, w3, w4]
 
-			self.theta1 = self.theta1 + w1 * dt
-			self.theta2 = self.theta2 + w2 * dt
-			self.theta3 = self.theta3 + w3 * dt
-			self.theta4 = self.theta4 + w4 * dt
-			
-			jointStates = JointState()
-			jointStates.header.frame_id = "odom"
-			jointStates.header.stamp =  self.get_clock().now().to_msg()
-
-			jointStates.name = ['drivewhl_1_joint', 'drivewhl_2_joint', 'drivewhl_3_joint', 'drivewhl_4_joint']
-			jointStates.position = [self.theta1, self.theta2, self.theta3, self.theta4]
-			jointStates.velocity = [w1, w2, w3, w4]
-
-			#Publish jointStates
-			self.publisher_.publish(jointStates)
+		#Publish jointStates
+		self.publisher_.publish(jointStates)
 
 		self.old_time = new_time
 		 
