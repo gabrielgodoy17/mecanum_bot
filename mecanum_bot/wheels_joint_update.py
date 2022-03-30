@@ -3,7 +3,7 @@ import math
 import re
 from rclpy.node import Node
 from sensor_msgs.msg import JointState
-from std_msgs.msg import String
+from mecanum_interfaces.msg import WheelSpeed
 
 
 
@@ -11,7 +11,7 @@ class WheelsJointUpdate(Node):
 
 	def __init__(self):
 		super().__init__('wheels_joint_update')
-		self.subscription = self.create_subscription(String, 'wheels_speed', self.listener_callback, 10)
+		self.subscription = self.create_subscription(WheelSpeed, 'wheels_speed', self.listener_callback, 10)
 		self.subscription #prevent unused variable warning
 		self.publisher_ = self.create_publisher(JointState, 'wheels_joint_state', 10)
 		self.old_time = self.get_clock().now()

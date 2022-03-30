@@ -32,15 +32,15 @@ ekf_filter_node:
         base_link_frame: base_link  # Defaults to "base_link" ifunspecified
         world_frame: odom           # Defaults to the value ofodom_frame if unspecified
 
-        odom0: odom_laser
-        odom0_config: [true,  true,  true,
-                       false, false, false,
-                       false, false, false,
-                       false, false, true,
-                       false, false, false]
+        # odom0: odom_laser
+        # odom0_config: [true,  true,  true,
+        #                false, false, false,
+        #                false, false, false,
+        #                false, false, true,
+        #                false, false, false]
 
-        odom1: odom_kin
-        odom1_config: [true,  true,  true,
+        odom0: odom_kin
+        odom0_config: [true,  true,  true,
                        false, false, false,
                        false, false, false,
                        false, false, true,
