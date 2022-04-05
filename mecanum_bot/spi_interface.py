@@ -28,7 +28,7 @@ class SpiInterface(Node):
 		self.subscription = self.create_subscription(WheelSpeed, 'motors', self.listener_callback, 10)
 		self.subscription #prevent unused variable warning
 		self.publisher_ = self.create_publisher(WheelSpeed, 'wheels_speed', 10)
-		timer_period = 0.01  # seconds   
+		timer_period = 0.005  # seconds   
 		self.timer = self.create_timer(timer_period, self.timer_callback)
 		self.i = 0
 		self.to_send_slave1 = ":w1000;:w2000;" #intialize with wheels stopped
