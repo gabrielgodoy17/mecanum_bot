@@ -4,7 +4,6 @@ import re
 from rclpy.node import Node
 from nav_msgs.msg import Odometry
 from tf_transformations import quaternion_from_euler
-from tf2_ros import TransformBroadcaster
 from std_msgs.msg import String
 
 from mecanum_interfaces.msg import WheelSpeed
@@ -20,9 +19,8 @@ class FwdKinematics(Node):
 		super().__init__('fwd_kinematics')
 		self.subscription = self.create_subscription(String, 'wheels_speed', self.listener_callback, 10)
 		self.subscription #prevent unused variable warning
-		self.publisher_ = self.create_publisher(Odometry, 'odom', 10)
+		self.publisher_ = self.create_publisher(Odometry, 'odom_kin', 10)
 		self.old_time = self.get_clock().now()
-		self.br = TransformBroadcaster(self)
 		self.x = 0.0
 		self.y = 0.0
 		self.th = 0.0
@@ -50,7 +48,7 @@ class FwdKinematics(Node):
 		#verify data pattern with regex
 		regex= "[^+\-0-9w]"
 		result = re.search(regex,wheel_speed)
-		if result is None : 
+		if result is None and len(wheel_speed) == 20: 
 		
 			#Separate wheel speeds
 			w1 = int(wheel_speed[2:5])
@@ -63,8 +61,6 @@ class FwdKinematics(Node):
 			w2 = rpmToRads(w2)
 			w3 = rpmToRads(w3)
 			w4 = rpmToRads(w4)
-
-			self.get_logger().info('w1: %f' % w1)
 
 			#Robot velocities
 			vx = (wheel_radius/4) * (w1 + w2 + w3 + w4)
