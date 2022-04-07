@@ -62,22 +62,22 @@ class SpiInterface(Node):
 
 
 		#Slave 1 spi
-		self.get_logger().debug("to_send_slave1: "+self.to_send_slave1)
+		#self.get_logger().debug("to_send_slave1: "+self.to_send_slave1)
 		slave_select_1.off()
 		response = spi.xfer2(bytearray(self.to_send_slave1.encode(encoding='UTF-8')))
 		slave_1 = ''.join([str(chr(elem)) for elem in response])
 		slave_1 = slave_1.replace(":","")
 		slave_1 = slave_1.replace(";","")
-		self.get_logger().info(slave_1)
+		#self.get_logger().debug(slave_1)
 		slave_select_1.on()
 
 		#Slave 2 spi
-		self.get_logger().debug("to_send_slave2: "+self.to_send_slave2)
+		#self.get_logger().debug("to_send_slave2: "+self.to_send_slave2)
 		slave_select_2.off()
 		response2 = spi.xfer2(bytearray(self.to_send_slave2.encode(encoding='UTF-8')))		
 		slave_2 = ''.join([str(chr(elem)) for elem in response2])
 		slave_2 = slave_2[1:2] + "3" + slave_2[3:6] + slave_2[8:9] + "4" + slave_2[10:13]
-		self.get_logger().info(slave_2)
+		#self.get_logger().debug(slave_2)
 		slave_select_2.on()
 
 		to_send_pub = slave_1 + slave_2
@@ -85,7 +85,7 @@ class SpiInterface(Node):
 		msg = String()
 		msg.data= to_send_pub
 		self.publisher_.publish(msg)
-		self.get_logger().info('Publishing: "%s"' % msg.data)
+		#self.get_logger().debug('Publishing: "%s"' % msg.data)
 		
 		# if w1 and w2 and w3 and w4:
 		# 	msg.w1 = float(w1.group())
