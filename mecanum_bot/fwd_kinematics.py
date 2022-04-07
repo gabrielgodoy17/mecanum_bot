@@ -4,8 +4,8 @@ import re
 from rclpy.node import Node
 from nav_msgs.msg import Odometry
 from tf_transformations import quaternion_from_euler
-from geometry_msgs.msg import TransformStamped
 from tf2_ros import TransformBroadcaster
+from std_msgs.msg import String
 
 from mecanum_interfaces.msg import WheelSpeed
 
@@ -18,7 +18,7 @@ class FwdKinematics(Node):
 
 	def __init__(self):
 		super().__init__('fwd_kinematics')
-		self.subscription = self.create_subscription(WheelSpeed, 'wheels_speed', self.listener_callback, 10)
+		self.subscription = self.create_subscription(String, 'wheels_speed', self.listener_callback, 10)
 		self.subscription #prevent unused variable warning
 		self.publisher_ = self.create_publisher(Odometry, 'odom', 10)
 		self.old_time = self.get_clock().now()
@@ -38,67 +38,72 @@ class FwdKinematics(Node):
 		
 		self.get_logger().debug('dt: ' + str(dt))
 
-		#Transform to rad/s
-		w1 = rpmToRads(msg.w1)
-		w2 = rpmToRads(msg.w2)
-		w3 = rpmToRads(msg.w3)
-		w4 = rpmToRads(msg.w4)
+		# #Transform to rad/s
+		# w1 = rpmToRads(msg.w1)
+		# w2 = rpmToRads(msg.w2)
+		# w3 = rpmToRads(msg.w3)
+		# w4 = rpmToRads(msg.w4)
 
-		#Robot velocities
-		vx = (wheel_radius/4) * (w1 + w2 + w3 + w4)
-		vy = (wheel_radius/4) * (-w1 + w2 + w3 - w4)
-		w = (wheel_radius/(4 * (length_x + length_y))) * (-w1 + w2 - w3 + w4)
+		#Read topic
+		wheel_speed=str(msg.data)
+
+		#verify data pattern with regex
+		regex= "[^+\-0-9w]"
+		result = re.search(regex,wheel_speed)
+		if result is None : 
 		
-		#Postition deltas
-		dx = (vx * math.cos(self.th) - vy * math.sin(self.th)) * dt
-		dy = (vx * math.sin(self.th) + vy * math.cos(self.th)) * dt
-		dth = w * dt
+			#Separate wheel speeds
+			w1 = int(wheel_speed[2:5])
+			w2 = int(wheel_speed[7:10])
+			w3 = int(wheel_speed[12:15])
+			w4 = int(wheel_speed[17:])
 
-		#Position estimation
-		self.x = self.x + dx
-		self.y = self.y + dy
-		self.th = self.th + dth
+			#Transaform to rad/s
+			w1 = rpmToRads(w1)
+			w2 = rpmToRads(w2)
+			w3 = rpmToRads(w3)
+			w4 = rpmToRads(w4)
 
-		#Quaternion calculation
-		quat = quaternion_from_euler(0, 0, self.th)
+			self.get_logger().info('w1: %f' % w1)
 
-		# tf_broadcaster = TransformBroadcaster()
+			#Robot velocities
+			vx = (wheel_radius/4) * (w1 + w2 + w3 + w4)
+			vy = (wheel_radius/4) * (-w1 + w2 + w3 - w4)
+			w = (wheel_radius/(4 * (length_x + length_y))) * (-w1 + w2 - w3 + w4)
+			
+			#Postition deltas
+			dx = (vx * math.cos(self.th) - vy * math.sin(self.th)) * dt
+			dy = (vx * math.sin(self.th) + vy * math.cos(self.th)) * dt
+			dth = w * dt
 
-		# #Create and fill transform
-		odom_tf = TransformStamped()
+			#Position estimation
+			self.x = self.x + dx
+			self.y = self.y + dy
+			self.th = self.th + dth
 
-		odom_tf.header.stamp.nanosec = new_time.to_msg()
-		odom_tf.header.frame_id = 'odom'
-		odom_tf.child_frame_id = 'base_link'
+			#Quaternion calculation
+			quat = quaternion_from_euler(0, 0, self.th)
 
-		odom_tf.transform.translation.x = self.x
-		odom_tf.transform.translation.y = self.y
-		odom_tf.transform.translation.z = 0.0
-		odom_tf.transform.rotation = quat
+			#Create and fill odometry
+			odom = Odometry()
+			odom.header.frame_id = "odom"
+			odom.header.stamp =  self.get_clock().now().to_msg()
+			odom.child_frame_id = "base_link"
 
-		# #Send transaform
-		self.br.sendTransform(odom_tf)
+			odom.pose.pose.position.x = self.x
+			odom.pose.pose.position.y = self.y
+			odom.pose.pose.position.z = 0.0
+			odom.pose.pose.orientation.x = quat[0]
+			odom.pose.pose.orientation.y = quat[1]
+			odom.pose.pose.orientation.z = quat[2]
+			odom.pose.pose.orientation.w = quat[3]
 
-		#Create and fill odometry
-		odom = Odometry()
-		odom.header.frame_id = "odom"
-		odom.header.stamp =  self.get_clock().now().to_msg()
-		odom.child_frame_id = "base_link"
+			odom.twist.twist.linear.x = vx
+			odom.twist.twist.linear.y = vy
+			odom.twist.twist.angular.z = w
 
-		odom.pose.pose.position.x = self.x
-		odom.pose.pose.position.y = self.y
-		odom.pose.pose.position.z = 0.0
-		odom.pose.pose.orientation.x = quat[0]
-		odom.pose.pose.orientation.y = quat[1]
-		odom.pose.pose.orientation.z = quat[2]
-		odom.pose.pose.orientation.w = quat[3]
-
-		odom.twist.twist.linear.x = vx
-		odom.twist.twist.linear.y = vy
-		odom.twist.twist.angular.z = w
-
-		#Publish odometry
-		self.publisher_.publish(odom)
+			#Publish odometry
+			self.publisher_.publish(odom)
 
 		self.old_time = new_time
 		 
