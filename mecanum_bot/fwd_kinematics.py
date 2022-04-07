@@ -4,6 +4,8 @@ import re
 from rclpy.node import Node
 from nav_msgs.msg import Odometry
 from tf_transformations import quaternion_from_euler
+from geometry_msgs.msg import TransformStamped
+from tf2_ros import TransformBroadcaster
 
 from mecanum_interfaces.msg import WheelSpeed
 
@@ -18,8 +20,9 @@ class FwdKinematics(Node):
 		super().__init__('fwd_kinematics')
 		self.subscription = self.create_subscription(WheelSpeed, 'wheels_speed', self.listener_callback, 10)
 		self.subscription #prevent unused variable warning
-		self.publisher_ = self.create_publisher(Odometry, 'odom_kin', 10)
+		self.publisher_ = self.create_publisher(Odometry, 'odom', 10)
 		self.old_time = self.get_clock().now()
+		self.br = TransformBroadcaster(self)
 		self.x = 0.0
 		self.y = 0.0
 		self.th = 0.0
@@ -34,18 +37,12 @@ class FwdKinematics(Node):
 		dt = ((new_time.__sub__(old_time)).nanoseconds)/1000000000
 		
 		self.get_logger().debug('dt: ' + str(dt))
-		
-		#Separate wheel speeds
-		w1 = msg.w1
-		w2 = msg.w2
-		w3 = msg.w3
-		w4 = msg.w4
 
 		#Transform to rad/s
-		w1 = rpmToRads(w1)
-		w2 = rpmToRads(w2)
-		w3 = rpmToRads(w3)
-		w4 = rpmToRads(w4)
+		w1 = rpmToRads(msg.w1)
+		w2 = rpmToRads(msg.w2)
+		w3 = rpmToRads(msg.w3)
+		w4 = rpmToRads(msg.w4)
 
 		#Robot velocities
 		vx = (wheel_radius/4) * (w1 + w2 + w3 + w4)
@@ -68,19 +65,19 @@ class FwdKinematics(Node):
 		# tf_broadcaster = TransformBroadcaster()
 
 		# #Create and fill transform
-		# odom_tf = TransformStamped()
+		odom_tf = TransformStamped()
 
-		# odom_tf.header.stamp.nanosec = new_time
-		# odom_tf.header.frame_id = "odom"
-		# odom_tf.child_frame_id = "base_link"
+		odom_tf.header.stamp.nanosec = new_time.to_msg()
+		odom_tf.header.frame_id = 'odom'
+		odom_tf.child_frame_id = 'base_link'
 
-		# odom_tf.transform.translation.x = self.x
-		# odom_tf.transform.translation.y = self.y
-		# odom_tf.transform.translation.z = 0.0
-		# odom_tf.transform.rotation = quat
+		odom_tf.transform.translation.x = self.x
+		odom_tf.transform.translation.y = self.y
+		odom_tf.transform.translation.z = 0.0
+		odom_tf.transform.rotation = quat
 
 		# #Send transaform
-		# tf_broadcaster.sendTransform(odom_tf)
+		self.br.sendTransform(odom_tf)
 
 		#Create and fill odometry
 		odom = Odometry()
