@@ -105,7 +105,7 @@ class SpiInterface(Node):
 		#Message slave 2
 		self.to_send_slave2 = generate_command(msg.w3, 1,self) + generate_command(msg.w4, 2,self)
 		
-		msg = WheelSpeed()
+		#msg = WheelSpeed()
 
 		#Slave 1 spi
 		#self.get_logger().debug("to_send_slave1: "+self.to_send_slave1)
