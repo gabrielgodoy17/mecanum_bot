@@ -17,17 +17,17 @@ class FwdKinematics(Node):
 
 	def __init__(self):
 		super().__init__('fwd_kinematics')
-		self.subscription = self.create_subscription(WheelSpeed, 'wheels_speed', self.listener_callback, 10)
+		self.subscription = self.create_subscription(WheelSpeed, 'wheels_speed_filtered', self.listener_callback, 10)
 		self.subscription #prevent unused variable warning
 		self.publisher_ = self.create_publisher(Odometry, 'odom_kin', 10)
 		self.old_time = self.get_clock().now()
 		self.x = 0.0
 		self.y = 0.0
 		self.th = 0.0
-		self.w1 = 0.0
-		self.w2 = 0.0
-		self.w3 = 0.0
-		self.w4 = 0.0
+		# self.w1 = 0.0
+		# self.w2 = 0.0
+		# self.w3 = 0.0
+		# self.w4 = 0.0
 
 	def listener_callback(self, msg):
 

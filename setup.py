@@ -31,6 +31,7 @@ setup(
             'inv_kinematics = mecanum_bot.inv_kinematics:main',
             'wheels_joint_update = mecanum_bot.wheels_joint_update:main',
             'spi_interface = mecanum_bot.spi_interface:main'
+            'wheel_speed_broadcaster = mecanum_bot.wheel_speed_broadcaster:main'
         ],
     },
 )
