@@ -19,8 +19,8 @@ spi.open(0,0)
 spi.max_speed_hz=244000
 spi.mode = 0b00
 
-# regex_w1 = re.compile(r'(?<=w1)(\+\d{2})|(?<=w1)(\d{3})|(?<=w1)(-\d{2})')
-# regex_w2 = re.compile(r'(?<=w2)(\+\d{2})|(?<=w2)(\d{3})|(?<=w2)(-\d{2})')
+regex_w1 = re.compile(r'(?<=w1)(\+\d{2})|(?<=w1)(\d{3})|(?<=w1)(-\d{2})')
+regex_w2 = re.compile(r'(?<=w2)(\+\d{2})|(?<=w2)(\d{3})|(?<=w2)(-\d{2})')
 
 class SpiInterface(Node):
 
@@ -28,7 +28,7 @@ class SpiInterface(Node):
 		super().__init__('spi_interface')
 		self.subscription = self.create_subscription(WheelSpeed, 'motors', self.listener_callback, 10)
 		self.subscription #prevent unused variable warning
-		self.publisher_ = self.create_publisher(String, 'wheels_speed', 10)
+		self.publisher_ = self.create_publisher(WheelSpeed, 'wheels_speed', 10)
 		timer_period = 0.005  # seconds   
 		self.timer = self.create_timer(timer_period, self.timer_callback)
 		self.i = 0
@@ -38,62 +38,62 @@ class SpiInterface(Node):
 	def timer_callback(self):
 		msg = WheelSpeed()
 
-		# #Slave 1 spi
-		# self.get_logger().debug("to_send_slave1: "+self.to_send_slave1)
-		# slave_select_1.off()
-		# response = spi.xfer2(bytearray(self.to_send_slave1.encode(encoding='UTF-8')))
-		# #Process slave 1 response
-		# slave_1 = ''.join([str(chr(elem)) for elem in response])
-		# self.get_logger().debug("recieve from slave1: "+slave_1)
-		# w1 = regex_w1.search(slave_1)
-		# w2 = regex_w2.search(slave_1)
-		# slave_select_1.on()
-
-		# #Slave 2 spi
-		# self.get_logger().debug("to_send_slave2: "+self.to_send_slave2)
-		# slave_select_2.off()
-		# response2 = spi.xfer2(bytearray(self.to_send_slave2.encode(encoding='UTF-8')))		
-		# #Process slave 2 response
-		# slave_2 = ''.join([str(chr(elem)) for elem in response2])
-		# self.get_logger().debug("recieve from slave2: "+slave_2)
-		# w3 = regex_w1.search(slave_2)
-		# w4 = regex_w2.search(slave_2)
-		# slave_select_2.on()
-
-
 		#Slave 1 spi
-		#self.get_logger().debug("to_send_slave1: "+self.to_send_slave1)
+		self.get_logger().debug("to_send_slave1: "+self.to_send_slave1)
 		slave_select_1.off()
 		response = spi.xfer2(bytearray(self.to_send_slave1.encode(encoding='UTF-8')))
+		#Process slave 1 response
 		slave_1 = ''.join([str(chr(elem)) for elem in response])
-		slave_1 = slave_1.replace(":","")
-		slave_1 = slave_1.replace(";","")
-		#self.get_logger().debug(slave_1)
+		self.get_logger().debug("recieve from slave1: "+slave_1)
+		w1 = regex_w1.search(slave_1)
+		w2 = regex_w2.search(slave_1)
 		slave_select_1.on()
 
 		#Slave 2 spi
-		#self.get_logger().debug("to_send_slave2: "+self.to_send_slave2)
+		self.get_logger().debug("to_send_slave2: "+self.to_send_slave2)
 		slave_select_2.off()
 		response2 = spi.xfer2(bytearray(self.to_send_slave2.encode(encoding='UTF-8')))		
+		#Process slave 2 response
 		slave_2 = ''.join([str(chr(elem)) for elem in response2])
-		slave_2 = slave_2[1:2] + "3" + slave_2[3:6] + slave_2[8:9] + "4" + slave_2[10:13]
-		#self.get_logger().debug(slave_2)
+		self.get_logger().debug("recieve from slave2: "+slave_2)
+		w3 = regex_w1.search(slave_2)
+		w4 = regex_w2.search(slave_2)
 		slave_select_2.on()
 
-		to_send_pub = slave_1 + slave_2
 
-		msg = String()
-		msg.data= to_send_pub
-		self.publisher_.publish(msg)
-		#self.get_logger().debug('Publishing: "%s"' % msg.data)
+		# #Slave 1 spi
+		# #self.get_logger().debug("to_send_slave1: "+self.to_send_slave1)
+		# slave_select_1.off()
+		# response = spi.xfer2(bytearray(self.to_send_slave1.encode(encoding='UTF-8')))
+		# slave_1 = ''.join([str(chr(elem)) for elem in response])
+		# slave_1 = slave_1.replace(":","")
+		# slave_1 = slave_1.replace(";","")
+		# #self.get_logger().debug(slave_1)
+		# slave_select_1.on()
+
+		# #Slave 2 spi
+		# #self.get_logger().debug("to_send_slave2: "+self.to_send_slave2)
+		# slave_select_2.off()
+		# response2 = spi.xfer2(bytearray(self.to_send_slave2.encode(encoding='UTF-8')))		
+		# slave_2 = ''.join([str(chr(elem)) for elem in response2])
+		# slave_2 = slave_2[1:2] + "3" + slave_2[3:6] + slave_2[8:9] + "4" + slave_2[10:13]
+		# #self.get_logger().debug(slave_2)
+		# slave_select_2.on()
+
+		# to_send_pub = slave_1 + slave_2
+
+		# msg = String()
+		# msg.data= to_send_pub
+		# self.publisher_.publish(msg)
+		# #self.get_logger().debug('Publishing: "%s"' % msg.data)
 		
-		# if w1 and w2 and w3 and w4:
-		# 	msg.w1 = float(w1.group())
-		# 	msg.w2 = float(w2.group())
-		# 	msg.w3 = float(w3.group())
-		# 	msg.w4 = float(w4.group())
-		# 	self.publisher_.publish(msg)
-		# 	self.get_logger().debug('Publishing: "%s"' % msg)
+		if w1 and w2 and w3 and w4:
+			msg.w1 = float(w1.group())
+			msg.w2 = float(w2.group())
+			msg.w3 = float(w3.group())
+			msg.w4 = float(w4.group())
+			self.publisher_.publish(msg)
+			self.get_logger().debug('Publishing: "%s"' % msg)
 
 	def listener_callback(self, msg):
 
