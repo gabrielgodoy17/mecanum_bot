@@ -34,6 +34,11 @@ class SpiInterface(Node):
 		self.i = 0
 		self.to_send_slave1 = ":w1000;:w2000;" #intialize with wheels stopped
 		self.to_send_slave2 = ":w3000;:w4000;" #intialize with wheels stopped
+		self.w1 = 0.0
+		self.w2 = 0.0
+		self.w3 = 0.0
+		self.w4 = 0.0
+
 
 	def timer_callback(self):
 		msg = WheelSpeed()
@@ -88,12 +93,17 @@ class SpiInterface(Node):
 		# #self.get_logger().debug('Publishing: "%s"' % msg.data)
 		
 		if w1 and w2 and w3 and w4:
-			msg.w1 = float(w1.group())
-			msg.w2 = float(w2.group())
-			msg.w3 = float(w3.group())
-			msg.w4 = float(w4.group())
-			self.publisher_.publish(msg)
-			self.get_logger().debug('Publishing: "%s"' % msg)
+			self.w1 = w1
+			self.w2 = w2
+			self.w3 = w3
+			self.w4 = w4
+
+		msg.w1 = float(self.w1.group())
+		msg.w2 = float(self.w2.group())
+		msg.w3 = float(self.w3.group())
+		msg.w4 = float(self.w4.group())
+		self.publisher_.publish(msg)
+		self.get_logger().debug('Publishing: "%s"' % msg)
 
 	def listener_callback(self, msg):
 
