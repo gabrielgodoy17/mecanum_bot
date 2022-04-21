@@ -93,15 +93,15 @@ class SpiInterface(Node):
 		# #self.get_logger().debug('Publishing: "%s"' % msg.data)
 		
 		if w1 and w2 and w3 and w4:
-			self.w1 = w1
-			self.w2 = w2
-			self.w3 = w3
-			self.w4 = w4
+			self.w1 = w1.group()
+			self.w2 = w2.group()
+			self.w3 = w3.group()
+			self.w4 = w4.group()
 
-		msg.w1 = float(self.w1.group())
-		msg.w2 = float(self.w2.group())
-		msg.w3 = float(self.w3.group())
-		msg.w4 = float(self.w4.group())
+		msg.w1 = float(self.w1)
+		msg.w2 = float(self.w2)
+		msg.w3 = float(self.w3)
+		msg.w4 = float(self.w4)
 		self.publisher_.publish(msg)
 		self.get_logger().debug('Publishing: "%s"' % msg)
 
