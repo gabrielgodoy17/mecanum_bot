@@ -40,16 +40,10 @@ class WheelSpeedBroadcaster(Node):
 			self.msg_success_count = self.msg_success_count + 1
 
 			#Separate wheel speeds
-			w1 = int(wheel_speed[2:5])
-			w2 = int(wheel_speed[7:10])
-			w3 = int(wheel_speed[12:15])
-			w4 = int(wheel_speed[17:])
-
-			#Transaform to rad/s
-			self.w1 = rpmToRads(w1)
-			self.w2 = rpmToRads(w2)
-			self.w3 = rpmToRads(w3)
-			self.w4 = rpmToRads(w4)
+			self.w1 = float(wheel_speed[2:5])
+			self.w2 = float(wheel_speed[7:10])
+			self.w3 = float(wheel_speed[12:15])
+			self.w4 = float(wheel_speed[17:])
 
 		to_send = WheelSpeed()
 
