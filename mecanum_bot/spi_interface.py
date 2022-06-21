@@ -16,7 +16,7 @@ last_msg_sent = " "
 
 spi = spidev.SpiDev()
 spi.open(0,0)
-spi.max_speed_hz=122000
+spi.max_speed_hz=15200
 spi.mode = 0b00
 
 class SpiInterface(Node):
@@ -26,7 +26,7 @@ class SpiInterface(Node):
 		self.subscription = self.create_subscription(WheelSpeed, 'motors', self.listener_callback, 10)
 		self.subscription #prevent unused variable warning
 		self.publisher_ = self.create_publisher(String, 'wheels_speed_raw', 10)
-		timer_period = 0.005  # seconds   
+		timer_period = 0.01  # seconds   
 		self.timer = self.create_timer(timer_period, self.timer_callback)
 		self.i = 0
 		self.to_send_slave1 = ":w1000;:w2000;" #intialize with wheels stopped

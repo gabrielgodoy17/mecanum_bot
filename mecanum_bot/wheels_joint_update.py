@@ -11,7 +11,7 @@ class WheelsJointUpdate(Node):
 
 	def __init__(self):
 		super().__init__('wheels_joint_update')
-		self.subscription = self.create_subscription(WheelSpeed, 'wheels_speed', self.listener_callback, 10)
+		self.subscription = self.create_subscription(WheelSpeed, 'wheels_speed_filtered', self.listener_callback, 10)
 		self.subscription #prevent unused variable warning
 		self.publisher_ = self.create_publisher(JointState, 'wheels_joint_state', 10)
 		self.old_time = self.get_clock().now()

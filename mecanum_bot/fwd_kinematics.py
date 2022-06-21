@@ -5,6 +5,8 @@ from rclpy.node import Node
 from nav_msgs.msg import Odometry
 from tf_transformations import quaternion_from_euler
 from std_msgs.msg import String
+from geometry_msgs.msg import TransformStamped
+from tf2_ros import TransformBroadcaster 
 
 from mecanum_interfaces.msg import WheelSpeed
 
@@ -20,6 +22,7 @@ class FwdKinematics(Node):
 		self.subscription = self.create_subscription(WheelSpeed, 'wheels_speed_filtered', self.listener_callback, 10)
 		self.subscription #prevent unused variable warning
 		self.publisher_ = self.create_publisher(Odometry, 'odom_kin', 10)
+		self.odom_broadcaster = TransformBroadcaster(self)
 		self.old_time = self.get_clock().now()
 		self.x = 0.0
 		self.y = 0.0
@@ -83,6 +86,21 @@ class FwdKinematics(Node):
 
 		#Quaternion calculation
 		quat = quaternion_from_euler(0, 0, self.th)
+
+		odom_transform = TransformStamped()
+		odom_transform.header.stamp = self.get_clock().now().to_msg()
+
+		odom_transform.header.frame_id = 'odom'
+		odom_transform.child_frame_id = 'base_link'
+		odom_transform.transform.rotation.x = quat[0]
+		odom_transform.transform.rotation.y = quat[1]
+		odom_transform.transform.rotation.z = quat[2]
+		odom_transform.transform.rotation.w = quat[3]
+		odom_transform.transform.translation.x = self.x
+		odom_transform.transform.translation.y = self.y
+		odom_transform.transform.translation.z = 0.0
+
+		self.odom_broadcaster.sendTransform(odom_transform)
 
 		#Create and fill odometry
 		odom = Odometry()
