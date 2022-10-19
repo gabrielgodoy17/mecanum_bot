@@ -6,60 +6,69 @@ from tf_transformations import quaternion_from_euler
 
 from mecanum_interfaces.msg import WheelSpeed
 
-#Initial config
-wheel_radius = 0.03 #m
-length_x = 0.1 #m
-length_y = 0.15 #m
+# Initial config
+wheel_radius = 0.03  # m
+length_x = 0.1  # m
+length_y = 0.15  # m
+
+MAX_RPM = 30.0
+MIN_RPM = 15.0
+ZERO_THRESHHOLD = 0.0
+
 
 class InvKinematics(Node):
 
-	def __init__(self):
-		super().__init__('inv_kinematics')
-		self.subscription = self.create_subscription(Twist, 'cmd_vel', self.listener_callback, 10)
-		self.subscription #prevent unused variable warning
-		self.publisher_ = self.create_publisher(WheelSpeed, 'motors', 10)
-		self.w1 = 0.0
-		self.w2 = 0.0
-		self.w3 = 0.0
-		self.w4 = 0.0
+    def __init__(self):
+        super().__init__('inv_kinematics')
+        self.subscription = self.create_subscription(
+            Twist, 'cmd_vel', self.listener_callback, 10)
+        self.subscription  # prevent unused variable warning
+        self.publisher_ = self.create_publisher(WheelSpeed, 'motors', 10)
+        self.w1 = 0.0
+        self.w2 = 0.0
+        self.w3 = 0.0
+        self.w4 = 0.0
 
-	def listener_callback(self, msg):
-		
-		#Separate wheel speeds
-		vx = msg.linear.x
-		vy = msg.linear.y
-		w = msg.angular.z
+    def listener_callback(self, msg):
 
-		#Wheel velocities
-		
-		self.w1 = (1/wheel_radius) * (vx - vy - (length_x + length_y) * w)
-		self.w2 = (1/wheel_radius) * (vx + vy + (length_x + length_y) * w)
-		self.w3 = (1/wheel_radius) * (vx + vy - (length_x + length_y) * w)
-		self.w4 = (1/wheel_radius) * (vx - vy + (length_x + length_y) * w)
-		
-		setPoint = WheelSpeed()
-		setPoint.w1 = radsToRpm(self.w1)
-		setPoint.w2 = radsToRpm(self.w2)
-		setPoint.w3 = radsToRpm(self.w3)
-		setPoint.w4 = radsToRpm(self.w4)
+        # Separate wheel speeds
+        vx = msg.linear.x
+        vy = msg.linear.y
+        w = msg.angular.z
 
-		#Publish odometry
-		self.publisher_.publish(setPoint)
+        # Wheel velocities
+
+        self.w1 = (1/wheel_radius) * (vx - vy - (length_x + length_y) * w)
+        self.w2 = (1/wheel_radius) * (vx + vy + (length_x + length_y) * w)
+        self.w3 = (1/wheel_radius) * (vx + vy - (length_x + length_y) * w)
+        self.w4 = (1/wheel_radius) * (vx - vy + (length_x + length_y) * w)
+
+        setPoint = WheelSpeed()
+
+        setPoint.w1 = radsToRpm(self.w1)
+        setPoint.w2 = radsToRpm(self.w2)
+        setPoint.w3 = radsToRpm(self.w3)
+        setPoint.w4 = radsToRpm(self.w4)
+
+        # Publish odometry
+        self.publisher_.publish(setPoint)
+
 
 def radsToRpm(rads):
-	return rads * (30/math.pi)
+    return rads * (30/math.pi)
 
 def main(args=None):
 
-	rclpy.init(args=args)
+    rclpy.init(args=args)
 
-	inv_kinematics = InvKinematics()
+    inv_kinematics = InvKinematics()
 
-	inv_kinematics.get_logger().info('Inv Kinematics Ready')
-	rclpy.spin(inv_kinematics)
+    inv_kinematics.get_logger().info('Inv Kinematics Ready')
+    rclpy.spin(inv_kinematics)
 
-	inv_kinematics.destroy_node()
-	rclpy.shutdown()
+    inv_kinematics.destroy_node()
+    rclpy.shutdown()
+
 
 if __name__ == '__main__':
     main()
